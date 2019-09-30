@@ -1,0 +1,78 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Sep 30 15:19:53 2019
+
+@author: chen
+"""
+
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Sep 29 19:56:40 2019
+
+@author: chen
+"""
+from selenium import webdriver
+import requests
+from bs4 import BeautifulSoup
+import bs4
+
+def get_HTMLText(url):
+    try:
+        r = requests.get(url)
+        r.raise_for_status
+        r.encoding = r.apparent_encoding
+        return r.text
+    except:
+        return "错误"
+# 获取例句
+def get_word_example(html,myword):
+    soup = BeautifulSoup(html,'html.parser')
+    try:
+        td = soup.find(id='authTrans',class_ = 'trans-wrapper trans-tab')
+        aa=td.find('li') 
+        bb=aa.find(class_='exampleLists')# 找到第一个意思的第一条例句
+        pp=bb.find('p').text # 将第一条例句str化
+        try: 
+            aa2 = td.find('li').next_sibling.next_sibling  
+            bb2=aa2.find(class_='exampleLists')   # 找到第二个意思的第一条例句
+            pp2=bb2.find('p').text    # 将第二条例句str化
+        except:
+            pp2 = '无（用于批量删除）'  #  在word里面批量删除即可
+            
+        # 将例句写入
+        with open('examples.txt','a',encoding='utf-8') as f:
+            f.write(myword)
+            f.write('[例]'+pp)
+            f.write("\n")
+            f.write('[例]'+pp2)
+            f.write("\n")
+            f.write("\n")
+    except:
+        auth=soup.find(id='authority')# 如果没有简单例句，则从权威例句里面找
+        pp=auth.find('p').text 
+        with open('examples.txt','a',encoding='utf-8') as f: # 如果错误，继续执行
+            f.write(myword)
+            f.write('[例]'+pp)
+            f.write("\n")
+        
+     
+def main():
+    link1 = 'http://dict.youdao.com/w/'
+    link2 = '/#keyfrom=dict2.top'
+    filename = 'words_100.txt'
+    f = open(filename,"r")
+    words = f.readlines()
+    f.close()
+    filename2 = 'meaning.txt'
+    i = 0
+    for word in words:
+      #  time.sleep(0.1)
+        myword = words[i]
+        url = link1 + myword + link2
+        html = get_HTMLText(url)
+        get_word_example(html,myword)
+        i=i+1
+    print("finish")
+    
+myword="fossil"
+main()  
