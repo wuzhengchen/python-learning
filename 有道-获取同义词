@@ -1,0 +1,69 @@
+
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Sep 29 19:56:40 2019
+
+@author: chen
+"""
+import requests
+from bs4 import BeautifulSoup
+import re
+
+
+def get_HTMLText(url):
+    try:
+        r = requests.get(url)
+        r.raise_for_status
+        r.encoding = r.apparent_encoding
+        return r.text
+    except:
+        return "错误"
+# 获取同义词
+def get_word_example(html,myword):
+    soup = BeautifulSoup(html,'html.parser')
+    try:
+        td = soup.find(id='synonyms')
+        bb=td.find(class_='wordGroup')
+        pp=bb.find_all('a')
+        a_content = []
+        for j in pp:
+            a_content.append(j.text) 
+        with open('examples.txt','a',encoding='utf-8') as f:   
+            f.write(myword)
+            f.write('[同]')
+            for j in range(len(a_content)): 
+                f.write(a_content[j])
+                f.write(' ')
+                
+            f.write("\n")
+            f.write("\n")
+    except:
+        with open('examples.txt','a',encoding='utf-8') as f: # 如果错误，继续执行
+            pp = '无（批量删除拓展词汇）' 
+            f.write(myword)
+            f.write(pp)
+            f.write("\n")
+            
+        
+     
+def main():
+    link1 = 'http://dict.youdao.com/w/'
+    link2 = '/#keyfrom=dict2.top'
+    filename = 'words_100.txt'
+    f = open(filename,"r")
+    words = f.readlines()
+    f.close()
+    i = 0
+    for word in words:
+      #  time.sleep(0.1)
+        myword = words[i]
+        url = link1 + myword + link2
+        html = get_HTMLText(url)
+        get_word_example(html,myword)
+        i=i+1
+        if i/100==0:
+            print(i)
+    print("finish")
+    
+myword="happy"
+main()  
