@@ -1,0 +1,69 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Sep 30 15:19:53 2019
+
+@author: chen
+"""
+
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Sep 29 19:56:40 2019
+
+@author: chen
+"""
+from selenium import webdriver
+import requests
+from bs4 import BeautifulSoup
+import bs4
+
+def get_HTMLText(url):
+    try:
+        r = requests.get(url)
+        r.raise_for_status
+        r.encoding = r.apparent_encoding
+        return r.text
+    except:
+        return "错误"
+# 获取意思
+def get_word_meaning(html,myword):
+    soup = BeautifulSoup(html,'html.parser')
+    try:
+        td = soup.find(class_ = 'trans-container')
+        aa=td.find('li').text            # 得到单词的第一条意思
+        try: 
+            aa2 = td.find('li').next_sibling.next_sibling.text  # 得到单词的第二个意思
+        except:
+            aa2 = ''
+        with open('examples.txt','a',encoding='utf-8') as f:
+            f.write(myword)
+            f.write(aa)
+            f.write("\n")
+            f.write(aa2)
+            f.write("\n")
+            f.write("\n")
+    except:
+        with open('examples.txt','a',encoding='utf-8') as f: # 如果错误，继续执行
+            f.write("X-------------------------------X")
+            f.write("\n")
+        
+     
+def main():
+    link1 = 'http://dict.youdao.com/w/'
+    link2 = '/#keyfrom=dict2.top'
+    filename = 'words_100.txt'
+    f = open(filename,"r")
+    words = f.readlines()
+    f.close()
+    filename2 = 'meaning.txt'
+    i = 0
+    for word in words:
+      #  time.sleep(0.1)
+        myword = words[i]
+        url = link1 + myword + link2
+        html = get_HTMLText(url)
+        get_word_meaning(html,myword)
+        i=i+1
+    print("finish")
+    
+myword="necessary"
+main()  
