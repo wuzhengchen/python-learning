@@ -34,7 +34,9 @@ def get_word_yinbiao(html,myword):
             f.write("\n")
     except:
         with open('examples.txt','a',encoding='utf-8') as f:
+            f.write(myword)
             f.write('-----没有音标----')
+            f.write("\n")
         
 # 获取意思  333333333333333333333333333333333333333333333333333333333333333333333333333333333333
 def get_word_meaning(html,myword):
@@ -49,8 +51,9 @@ def get_word_meaning(html,myword):
         with open('examples.txt','a',encoding='utf-8') as f:
             f.write(aa)
             f.write("\n")
-            f.write(aa2)
-            f.write("\n")
+            if aa2 != '':
+                f.write(aa2)
+                f.write("\n")
     except:
         with open('examples.txt','a',encoding='utf-8') as f: # 如果错误，继续执行
             f.write("X--------------没有含义-----------------X")
@@ -103,14 +106,13 @@ def get_word_synonyms(html,myword):
             f.write('[同]')
             for j in range(len(a_content)): 
                 f.write(a_content[j])
-                f.write(' ')
+                f.write('  ')
                 
             f.write("\n")
     except:
         with open('examples.txt','a',encoding='utf-8') as f: # 如果错误，继续执行
-            pp = '无（批量删除拓展词汇）' 
+            pp = '无（批量删除[同]词汇）' 
             f.write(pp)
-            f.write("\n")
             f.write("\n")            
 #  获取引用3333333333333333333333333333333333333333333333333333333333333333333333333333333333
 def get_word_abstract(html,myword):
