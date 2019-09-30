@@ -1,0 +1,55 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Sep 29 19:56:40 2019
+
+@author: chen
+"""
+from selenium import webdriver
+import requests
+from bs4 import BeautifulSoup
+import bs4
+
+def get_HTMLText(url):
+    try:
+        r = requests.get(url)
+        r.raise_for_status
+        r.encoding = r.apparent_encoding
+        return r.text
+    except:
+        return "错误"
+# 寻找音标
+def get_word(ulist,html,myword):
+    soup = BeautifulSoup(html,'html.parser')
+    td = soup.find(class_ = 'baav')
+    aa=td.find('span')
+    yinbiao = aa.next_sibling.next_sibling
+    yinbiao = yinbiao.find('span').text
+    with open('examples.txt','a',encoding='utf-8') as f:
+        f.write(myword)
+        f.write(yinbiao)
+        f.write("\n")
+     
+def main():
+    lio=[]
+    link1 = 'http://dict.youdao.com/w/'
+    link2 = '/#keyfrom=dict2.top'
+    filename = 'words.txt'
+    f = open(filename,"r")
+    words = f.readlines()
+    f.close()
+    filename2 = 'examples.txt'
+  #  f = open(filename2,"w")
+    i = 0
+    for word in words:
+      #  time.sleep(0.1)
+        myword = words[i]
+        url = link1 + myword + link2
+        html = get_HTMLText(url)
+        get_word(lio,html,myword)
+        i=i+1
+    
+ #   f.close()
+    print("finish")
+    
+myword="good"
+main()  
