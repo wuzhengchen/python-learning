@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Sep 30 15:19:53 2019
-
-@author: chen
-"""
 
 # -*- coding: utf-8 -*-
 """
@@ -11,10 +5,9 @@ Created on Sun Sep 29 19:56:40 2019
 
 @author: chen
 """
-from selenium import webdriver
 import requests
 from bs4 import BeautifulSoup
-import bs4
+
 
 def get_HTMLText(url):
     try:
@@ -48,22 +41,28 @@ def get_word_example(html,myword):
             f.write("\n")
             f.write("\n")
     except:
-        auth=soup.find(id='authority')# 如果没有简单例句，则从权威例句里面找
-        pp=auth.find('p').text 
-        with open('examples.txt','a',encoding='utf-8') as f: # 如果错误，继续执行
-            f.write(myword)
-            f.write('[例]'+pp)
-            f.write("\n")
+        try:
+            auth=soup.find(id='authority')# 如果没有简单例句，则从权威例句里面找
+            pp=auth.find('p').text 
+            with open('examples.txt','a',encoding='utf-8') as f: # 如果错误，继续执行
+                f.write(myword)
+                f.write('[例]'+pp)
+                f.write("\n")
+        except:
+            with open('examples.txt','a',encoding='utf-8') as f: # 如果错误，继续执行
+                f.write(myword)
+                f.write('----------------无例句---------------------')
+                f.write("\n")
+            
         
      
 def main():
     link1 = 'http://dict.youdao.com/w/'
     link2 = '/#keyfrom=dict2.top'
-    filename = 'words_100.txt'
+    filename = 'words.txt'
     f = open(filename,"r")
     words = f.readlines()
     f.close()
-    filename2 = 'meaning.txt'
     i = 0
     for word in words:
       #  time.sleep(0.1)
@@ -72,6 +71,8 @@ def main():
         html = get_HTMLText(url)
         get_word_example(html,myword)
         i=i+1
+        if i/100==0:
+            print(i)
     print("finish")
     
 myword="fossil"
