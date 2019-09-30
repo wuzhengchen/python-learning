@@ -1,0 +1,158 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Sep 30 20:23:45 2019
+
+@author: chen
+"""
+
+# 综合，单词，音标 词义，例句，同义词，引用词
+
+import requests
+from bs4 import BeautifulSoup
+ 
+# 得到 html 内容 333333333333333333333333333333333333333333333333333333333333333333333
+def get_HTMLText(url):
+    try:
+        r = requests.get(url)
+        r.raise_for_status
+        r.encoding = r.apparent_encoding
+        return r.text
+    except:
+        return "错误"
+
+# 音标  33333333333333333333333333333333333333333333333333333333333333333333333333333333333333333
+def get_word_yinbiao(html,myword):
+    soup = BeautifulSoup(html,'html.parser')
+    try:
+        td = soup.find(class_ = 'baav')
+        aa=td.find('span')
+        yinbiao = aa.next_sibling.next_sibling
+        yinbiao = yinbiao.find('span').text
+        with open('examples.txt','a',encoding='utf-8') as f:
+            f.write(myword)
+            f.write(yinbiao)
+            f.write("\n")
+    except:
+        with open('examples.txt','a',encoding='utf-8') as f:
+            f.write('-----没有音标----')
+        
+# 获取意思  333333333333333333333333333333333333333333333333333333333333333333333333333333333333
+def get_word_meaning(html,myword):
+    soup = BeautifulSoup(html,'html.parser')
+    try:
+        td = soup.find(class_ = 'trans-container')
+        aa=td.find('li').text            # 得到单词的第一条意思
+        try: 
+            aa2 = td.find('li').next_sibling.next_sibling.text  # 得到单词的第二个意思
+        except:
+            aa2 = ''
+        with open('examples.txt','a',encoding='utf-8') as f:
+            f.write(aa)
+            f.write("\n")
+            f.write(aa2)
+            f.write("\n")
+    except:
+        with open('examples.txt','a',encoding='utf-8') as f: # 如果错误，继续执行
+            f.write("X--------------没有含义-----------------X")
+            f.write("\n")
+# 例句  333333333333333333333333333333333333333333333333333333333333333333333333333333333            
+def get_word_example(html,myword):
+    soup = BeautifulSoup(html,'html.parser')
+    try:
+        td = soup.find(id='authTrans',class_ = 'trans-wrapper trans-tab')
+        aa=td.find('li') 
+        bb=aa.find(class_='exampleLists')# 找到第一个意思的第一条例句
+        pp=bb.find('p').text # 将第一条例句str化
+        try: 
+            aa2 = td.find('li').next_sibling.next_sibling  
+            bb2=aa2.find(class_='exampleLists')   # 找到第二个意思的第一条例句
+            pp2=bb2.find('p').text    # 将第二条例句str化
+        except:
+            pp2 = '无（用于批量删除）'  #  在word里面批量删除即可
+            
+        # 将例句写入
+        with open('examples.txt','a',encoding='utf-8') as f:
+            f.write('[例]'+pp)
+            f.write("\n")
+            f.write('[例]'+pp2)
+            f.write("\n")
+    except:
+        try:
+            auth=soup.find(id='authority')# 如果没有简单例句，则从权威例句里面找
+            pp=auth.find('p').text 
+            with open('examples.txt','a',encoding='utf-8') as f: # 如果错误，继续执行
+                f.write(myword)
+                f.write('[例]'+pp)
+                f.write("\n")
+        except:
+            with open('examples.txt','a',encoding='utf-8') as f: # 如果错误，继续执行
+                f.write(myword)
+                f.write('----------------无例句---------------------')
+                f.write("\n")
+#  同义词 3333333333333333333333333333333333333333333333333333333333333333333333333333333333333333          
+def get_word_synonyms(html,myword):
+    soup = BeautifulSoup(html,'html.parser')
+    try:
+        td = soup.find(id='synonyms')
+        bb=td.find(class_='wordGroup')
+        pp=bb.find_all('a')
+        a_content = []
+        for j in pp:# 获取一串同义词
+            a_content.append(j.text) 
+        with open('examples.txt','a',encoding='utf-8') as f:   
+            f.write('[同]')
+            for j in range(len(a_content)): 
+                f.write(a_content[j])
+                f.write(' ')
+                
+            f.write("\n")
+    except:
+        with open('examples.txt','a',encoding='utf-8') as f: # 如果错误，继续执行
+            pp = '无（批量删除拓展词汇）' 
+            f.write(pp)
+            f.write("\n")
+            f.write("\n")            
+#  获取引用3333333333333333333333333333333333333333333333333333333333333333333333333333333333
+def get_word_abstract(html,myword):
+    soup = BeautifulSoup(html,'html.parser')
+    try:
+        td = soup.find(id='relWordTab')
+        aa = td.find('p').next_sibling.next_sibling  
+        pp = aa.find('a').text
+        print(pp)
+        with open('examples.txt','a',encoding='utf-8') as f:   
+            f.write('[引]'+pp)
+            f.write("\n")
+            f.write("\n")
+    except:
+        with open('examples.txt','a',encoding='utf-8') as f: # 如果错误，继续执行
+            pp = '无（批量删除[引]词汇）' 
+            f.write(pp)
+            f.write("\n")
+            f.write("\n")
+
+
+def main():
+    link1 = 'http://dict.youdao.com/w/'
+    link2 = '/#keyfrom=dict2.top'
+    filename = 'words_100.txt' # 获取txt文件里面的单词
+    f = open(filename,"r")
+    words = f.readlines()
+    f.close()
+    i = 0
+    for word in words:
+      #  time.sleep(0.1)
+        myword = words[i]
+        url = link1 + myword + link2
+        html = get_HTMLText(url)
+        get_word_yinbiao(html,myword)
+        get_word_meaning(html,myword)
+        get_word_example(html,myword)
+        get_word_synonyms(html,myword)
+        get_word_abstract(html,myword)
+        i=i+1
+        if i%100==0:
+            print(i)
+    print("finish")
+myword="happy"
+main() 
